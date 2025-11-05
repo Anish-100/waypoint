@@ -1,42 +1,82 @@
-#root {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 2rem;
-	text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-.logo:hover {
-	filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-	filter: drop-shadow(0 0 2em #61dafbaa);
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #5f3b8bd7;
 }
 
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
-	}
+h1 {
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
 }
 
-.card {
-	padding: 2em;
+.camera-box {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 16/9;
+  background-color: #000;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-.read-the-docs {
-	color: #888;
+.camera-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
+
+button {
+  background-color: rgb(14, 1, 22);
+  color: #ffffff;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.2rem;
+  }
+  
+  button {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+
+}
+h2 {
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+}
+

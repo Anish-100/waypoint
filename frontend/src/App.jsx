@@ -1,43 +1,56 @@
-import { useState } from "react";
+import { useState, useRef } from 'react';
+import './App.css';
 
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
-
-import RandomItem from "@/components/RandomItem";
-
-/*
-This is the starting point of our application. Here, we can begin coding 
-and transforming this page into whatever best suits our needs. 
-For example, we can start by creating a login page, home page, or an about section; 
-there are many ways to get your application up and running. 
-With App.jsx, we can also define global variables and routes to store information as well as page navigation.
-*/
 function App() {
-	const [count, setCount] = useState(0);
+  const [stream, setStream] = useState(null);
+  const videoRef = useRef(null);
 
-	return (
-		<>
-			<div>
-				<a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-					<img src={viteLogo} className="logo" alt="Vite logo" />
-				</a>
-				<a href="https://react.dev" target="_blank" rel="noreferrer">
-					<img src={reactLogo} className="logo react" alt="React logo" />
-				</a>
-			</div>
-			<h1>Vite + React</h1>
-			<div className="card">
-				<button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-				<p>
-					Edit <code>src/App.jsx</code> and save to test HMR
-				</p>
+  const handleCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        setStream(mediaStream);
+      }
+    } catch (error) {
+      // Silently ignore if permission denied
+      console.log('Camera access denied');
+    }
+  };
 
-				<RandomItem maximum={1000} />
-			</div>
-			<p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-		</>
-	);
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
+    
+    canvas.toBlob((blob) => {
+      console.log('Photo captured:', URL.createObjectURL(blob));
+      // Send to backend here
+    }, 'image/jpeg');
+  };
+
+  return ( // This prints it out
+    <div className="app">
+      <h1>Take a picture of your surroundings</h1>
+      <div className="camera-box">   {/* This is a critical part where the camera window is created, the class can be edited in app.css*/}
+        <video ref={videoRef} autoPlay playsInline />
+      </div>
+      {!stream ? (
+        <button onClick={handleCamera}>Enable Camera</button>
+      ) : (
+        <button onClick={capturePhoto}>Capture Photo</button>
+      )}
+		<h2> Please ensure pictures are only in landscape mode!</h2>
+	</div>
+  );
+
 }
 
 export default App;
