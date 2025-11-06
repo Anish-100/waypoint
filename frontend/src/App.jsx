@@ -9,7 +9,7 @@ import './ProfileStyles.css';
     if (window.location.hostname === 'localhost') {
       return 'http://localhost:8000';
     }
-    return 'https://waypoint-sk0h.onrender.com'; // Your deployed backend
+    return 'https://waypoint-sk0h.onrender.com:1000'; // Your deployed backend
   };
   const Backend_URL = getBackendUrl();
 
