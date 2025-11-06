@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
+import './ProfileStyles.css';
 
 function App() {
   const [stream, setStream] = useState(null);
