@@ -9,6 +9,17 @@ function App() {
   const [locationError, setLocationError] = useState(null);
   const videoRef = useRef();
 
+  // Mock user data - replace with real data
+  const [userData, setUserData] = useState({
+    username: 'Explorer',
+    joinDate: 'November 2024',
+    totalPoints: 0,
+    landmarksCollected: 0,
+    photosUploaded: 0,
+    level: 1,
+    badges: []
+  });
+
   // Request location permission on mount
   useEffect(() => {
     requestLocation();
@@ -57,7 +68,6 @@ function App() {
         (error) => {
           console.log('Location error:', error);
           setLocationError(error.message);
-          // Don't show alert immediately, user can still use the app
         },
         {
           enableHighAccuracy: true,
@@ -72,17 +82,15 @@ function App() {
 
   const handleCamera = async () => {
     try {
-      // Request camera with mobile-optimized settings
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
-          facingMode: 'environment', // Use back camera on mobile
+          facingMode: 'environment',
           width: { ideal: 1920 },
           height: { ideal: 1080 }
         },
         audio: false
       });
       
-      // Set stream state - useEffect will handle video element assignment
       setStream(mediaStream);
       console.log('Media stream acquired');
     } catch (error) {
@@ -97,7 +105,6 @@ function App() {
       return;
     }
     
-    // Get fresh location data at capture time
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -111,7 +118,7 @@ function App() {
         },
         (error) => {
           console.log('Location unavailable at capture:', error);
-          processCapturedPhoto(coordinates); // Use last known coordinates
+          processCapturedPhoto(coordinates);
         },
         {
           enableHighAccuracy: true,
@@ -136,13 +143,11 @@ function App() {
       console.log('Photo captured:', imageUrl);
       console.log('Coordinates:', coords);
       
-      // Show success feedback
       if (coords) {
         alert(`Photo captured!\nLat: ${coords.latitude.toFixed(6)}\nLon: ${coords.longitude.toFixed(6)}\nAccuracy: ${coords.accuracy.toFixed(0)}m`);
       } else {
         alert('Photo captured! (No location data available)');
       }
-      
       // TODO: Send to backend here
       // const formData = new FormData();
       // formData.append('image', blob);
@@ -187,6 +192,14 @@ function App() {
           <span className="nav-icon">🎴</span>
           <span className="nav-label">Collection</span>
         </button>
+
+        <button 
+          className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
+          onClick={() => setCurrentPage('profile')}
+        >
+          <span className="nav-icon">👤</span>
+          <span className="nav-label">Profile</span>
+        </button>
       </nav>
 
       {/* Main Content */}
@@ -199,7 +212,6 @@ function App() {
               Point your camera at a landmark to learn its history
             </p>
 
-            {/* Location Status */}
             <div className="location-status">
               {coordinates ? (
                 <p className="location-success">
@@ -284,6 +296,84 @@ function App() {
                   Start Discovering
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Page */}
+        {currentPage === 'profile' && (
+          <div className="page profile-page">
+            <div className="profile-header">
+              <div className="profile-avatar">
+                <span className="avatar-icon">👤</span>
+              </div>
+              <h2 className="profile-username">{userData.username}</h2>
+              <p className="profile-join-date">Member since {userData.joinDate}</p>
+            </div>
+
+            <div className="profile-stats">
+              <div className="stat-card">
+                <div className="stat-icon">⭐</div>
+                <div className="stat-value">{userData.totalPoints}</div>
+                <div className="stat-label">Total Points</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon">🏛️</div>
+                <div className="stat-value">{userData.landmarksCollected}</div>
+                <div className="stat-label">Landmarks</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon">📸</div>
+                <div className="stat-value">{userData.photosUploaded}</div>
+                <div className="stat-label">Photos</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon">🏆</div>
+                <div className="stat-value">Level {userData.level}</div>
+                <div className="stat-label">Explorer Level</div>
+              </div>
+            </div>
+
+            <div className="profile-section">
+              <h3 className="section-title">🏅 Achievements TODO</h3>
+              <div className="achievements-grid">
+                {userData.badges.length > 0 ? (
+                  userData.badges.map((badge, index) => (
+                    <div key={index} className="achievement-badge">
+                      <span className="badge-icon">{badge.icon}</span>
+                      <span className="badge-name">{badge.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-achievements">
+                    <p>🎯 No achievements yet</p>
+                    <p className="achievement-hint">Keep exploring to earn badges!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="profile-section">
+              <h3 className="section-title">📊 Recent Activity TODO</h3>
+              <div className="activity-list">
+                <div className="empty-activity">
+                  <p>📍 No recent activity</p>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => setCurrentPage('camera')}
+                  >
+                    Start Exploring
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="profile-actions">
+              <button className="btn btn-outline">Edit Profile TODO</button>
+              <button className="btn btn-outline">Settings TODO</button>
             </div>
           </div>
         )}
