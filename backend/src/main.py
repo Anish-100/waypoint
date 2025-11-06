@@ -14,6 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def health_check():
+    return {"status": "ok, backend is alive!"}
+
 @app.post("/api/v1/landmarks/identify")
 async def identify_landmark(
     image: UploadFile = File(...),
