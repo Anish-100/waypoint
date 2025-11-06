@@ -1,49 +1,57 @@
-"""
-If you are deploying on Vercel, you can delete this file.
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from config import supabase, STORAGE_BUCKET, PHOTOS_FOLDER
+from uuid import uuid4
 
-This app puts together the frontend UI and backend API for deployment on Render.
-For local development, the app for just the API should be run on its own:
-$ fastapi dev src/api.py
-
-The provided Dockerfile will handle putting everything together for deployment.
-When used, the application bundle from building the React app with `npm run build`
-is placed at the public directory defined below for FastAPI to serve as static assets.
-That means any requests for existing files will be served the contents of those files,
-and any requests for the API paths will be sent to the API routes defined in the API.
-"""
-
-from pathlib import Path
-
-from fastapi import FastAPI, Request, status
-from fastapi.exceptions import HTTPException
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-
-import api
-
-PUBLIC_DIRECTORY = Path("public")
-
-# Create a main app under which the API will be mounted as a sub-app
 app = FastAPI()
 
-# Send all requests to paths under `/api/*` to the API router
-app.mount("/api/", api.app)
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "https://waypoint-sk0h.onrender.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-
-# Make the public files (HTML, JS, CSS, etc.) accessible on the server
-# With HTML mode, `index.html` is automatically loaded
-app.mount("/", StaticFiles(directory=PUBLIC_DIRECTORY, html=True), name="public")
-
-
-@app.exception_handler(status.HTTP_404_NOT_FOUND)
-async def not_found(req: Request, exc: HTTPException) -> FileResponse:
-    """
-    Serve the frontend app for all other requests not directed to `/api/` or `/`.
-
-    This allows the single-page application to do client-side routing where the browser
-    process the URL path in the React App. Otherwise, users would see 404 Not Found when
-    navigating directly to a virtual path.
-
-    This should be removed if the frontend app does not handle different URL paths.
-    """
-    return FileResponse(PUBLIC_DIRECTORY / "index.html")
+@app.post("/api/v1/landmarks/identify")
+async def identify_landmark(
+    image: UploadFile = File(...),
+    latitude: float = Form(...),
+    longitude: float = Form(...),
+    timestamp: str = Form(None)  # Added this
+):
+    # STEP 1: Generate unique filename
+    file_id = str(uuid4())
+    file_name = f"{file_id}.jpg"
+    
+    # STEP 2: Define the path IN THE BUCKET
+    storage_path = f"landmark-captures/{file_name}"
+    
+    # STEP 3: Read image content (FIX)
+    image_content = await image.read()
+    
+    # STEP 4: Upload to Storage (FIX)
+    supabase.storage.from_("game-assets").upload(
+        storage_path,
+        image_content,  # Changed from image.file
+        {"content-type": "image/jpeg"}
+    )
+    
+    # STEP 5: Get the URL
+    image_url = supabase.storage.from_("game-assets").get_public_url(storage_path)
+    
+    # STEP 6: Save to Database Table with that URL
+    result = supabase.table("landmark_captures").insert({
+        "image_url": image_url,
+        "latitude": latitude,
+        "longitude": longitude,
+        "timestamp": timestamp  # Added this
+    }).execute()
+    
+    return {
+        "success": True,
+        "image_url": image_url,
+        "record_id": result.data[0]["id"],
+        "received": {"latitude": latitude, "longitude": longitude}
+    }

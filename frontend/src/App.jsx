@@ -2,6 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import './ProfileStyles.css';
 
+
+ // Needed to distinguish between the local or render hosts
+  // Detects automatically
+  const getBackendUrl = () => {
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:8000';
+    }
+    return 'https://waypoint-sk0h.onrender.com'; // Your deployed backend
+  };
+  const Backend_URL = getBackendUrl();
+
+
 function App() {
   const [stream, setStream] = useState(null);
   const [currentPage, setCurrentPage] = useState('camera');
@@ -9,6 +21,7 @@ function App() {
   const [coordinates, setCoordinates] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const videoRef = useRef();
+
 
   // Mock user data - replace with real data
   const [userData, setUserData] = useState({
@@ -20,6 +33,7 @@ function App() {
     level: 1,
     badges: []
   });
+
 
   // Request location permission on mount
   useEffect(() => {
@@ -132,41 +146,45 @@ function App() {
     }
   };
 
-  const processCapturedPhoto = (coords) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const context = canvas.getContext('2d');
-    context.drawImage(videoRef.current, 0, 0);
-    
-    canvas.toBlob((blob) => {
-      const imageUrl = URL.createObjectURL(blob);
-      console.log('Photo captured:', imageUrl);
-      console.log('Coordinates:', coords);
+  const processCapturedPhoto = async (coords) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = videoRef.current.videoWidth;
+  canvas.height = videoRef.current.videoHeight;
+  const context = canvas.getContext('2d');
+  context.drawImage(videoRef.current, 0, 0);
+  
+  canvas.toBlob(async (blob) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', blob, 'photo.jpg');
+      formData.append('latitude', coords.latitude);
+      formData.append('longitude', coords.longitude);
+      formData.append('timestamp', new Date().toISOString());
       
-      if (coords) {
-        alert(`Photo captured!\nLat: ${coords.latitude.toFixed(6)}\nLon: ${coords.longitude.toFixed(6)}\nAccuracy: ${coords.accuracy.toFixed(0)}m`);
-      } else {
-        alert('Photo captured! (No location data available)');
+      console.log('Uploading to backend...');
+      
+      const response = await fetch(`${Backend_URL}/api/v1/landmarks/identify`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
       }
-      // TODO: Send to backend here
-      // const formData = new FormData();
-      // formData.append('image', blob);
-      // formData.append('latitude', coords?.latitude);
-      // formData.append('longitude', coords?.longitude);
-      // formData.append('accuracy', coords?.accuracy);
-      // 
-      // fetch('/api/identify-landmark', { 
-      //   method: 'POST', 
-      //   body: formData 
-      // })
-      // .then(response => response.json())
-      // .then(data => {
-      //   console.log('Landmark identified:', data);
-      //   // Add to collection, show card, etc.
-      // });
-    }, 'image/jpeg', 0.9);
-  };
+      
+      const data = await response.json();
+      console.log('✅ Success:', data);
+      
+      alert(`✅ Landmark captured!\n\n📍 ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
+      
+    } catch (error) {
+      console.error('❌ Error:', error);
+      alert('❌ Upload failed: ' + error.message);
+    }
+  }, 'image/jpeg', 0.9);
+};
+
+
 
   return (
     <div className="app">
@@ -212,7 +230,6 @@ function App() {
             <p className="page-description">
               Point your camera at a landmark to learn its history
             </p>
-
             <div className="location-status">
               {coordinates ? (
                 <p className="location-success">

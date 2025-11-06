@@ -1,2 +1,5 @@
 fastapi-cli[standard]
 uvicorn[standard]
+
+supabase
+python-dotenv
