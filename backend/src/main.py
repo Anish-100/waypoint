@@ -8,15 +8,13 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://waypoint-sk0h.onrender.com"],
+    allow_origins=["http://localhost:5173", "https://waypoint-1-r7sz.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-async def health_check():
-    return {"status": "ok, backend is alive!"}
+
 
 @app.post("/api/v1/landmarks/identify")
 async def identify_landmark(
