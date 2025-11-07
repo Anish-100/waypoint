@@ -128,7 +128,7 @@ function App() {
         ...prev,
         landmarksCollected: uniqueCount,
         photosUploaded: totalPhotos,
-        totalPoints: uniqueCount * 100 + totalPhotos * 10, // Simple point calculation
+        totalPoints: uniqueCount * 10, // Simple point calculation
         level: newLevel,
         badges: newBadges
       }));
@@ -588,7 +588,7 @@ function App() {
 
                       <div style={{ marginTop: '1rem' }}>
                         <span className="chip chip-info">
-                          {capture.landmarks?.category || "Captured"}
+                          Category: {capture.landmarks?.category || "Captured"}
                         </span>
                       </div>
                     </div>
