@@ -1,4 +1,4 @@
-_import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -8,6 +8,33 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+{/*
+const customIcon = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+*/}
+
+// Component to recenter map when coordinates change
+function RecenterMap({ coordinates }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coordinates) {
+      map.setView([coordinates.latitude, coordinates.longitude], 13);
+    }
+  }, [coordinates, map]);
+  return null;
+}
+
 
 // Detect backend URL
 const getBackendUrl = () => {
@@ -299,6 +326,31 @@ function App() {
                 <Chip label="📍 Getting location..." />
               )}
             </Box>
+            
+            {/* edits here */}
+            {coordinates && (
+              <Box sx={{ 
+                height: 300, 
+                mb: 3, 
+                borderRadius: 2, 
+                overflow: 'hidden',
+                boxShadow: 2 
+              }}>
+                <MapContainer
+                  center={[coordinates.latitude, coordinates.longitude]}
+                  zoom={13}
+                  style={{ height: '100%', width: '100%' }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={[coordinates.latitude, coordinates.longitude]}>
+                    <Popup>You are here!</Popup>
+                  </Marker>
+                </MapContainer>
+              </Box>
+            )}
+              
 
             <Box sx={{ 
               bgcolor: 'black', 
