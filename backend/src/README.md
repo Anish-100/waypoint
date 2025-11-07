@@ -13,6 +13,8 @@ SUPABASE_URL = Your URL
  ```id| name | description | historical_context| latitude| longitude | detection_radius_meters | category | image_url |```
 
 ```landmarks_captures``` covers these variables:
+
+
 ```id| image_url | latitude | longitude| timestamp| landmark_id | user_id | distance_from_landmark_meters ```
 
 user_id is not implemented yet, and distance_from_landmark is calculated and changed each time a picture is taken
