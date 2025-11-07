@@ -8,21 +8,10 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import Alert from '@mui/material/Alert';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-
-{/*
-const customIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-*/}
 
 // Component to recenter map when coordinates change
 function RecenterMap({ coordinates }) {
@@ -34,7 +23,6 @@ function RecenterMap({ coordinates }) {
   }, [coordinates, map]);
   return null;
 }
-
 
 // Detect backend URL
 const getBackendUrl = () => {
@@ -53,6 +41,12 @@ function App() {
   const [locationError, setLocationError] = useState(null);
   const [landmarkCollection, setLandmarkCollection] = useState([]);
   const [isLoadingCollection, setIsLoadingCollection] = useState(false);
+  
+  // NEW: Nearby landmark detection
+  const [nearestLandmark, setNearestLandmark] = useState(null);
+  const [isCheckingLandmarks, setIsCheckingLandmarks] = useState(false);
+  const [captureResult, setCaptureResult] = useState(null);
+  
   const videoRef = useRef();
 
   const [userData, setUserData] = useState({
@@ -69,23 +63,53 @@ function App() {
   const fetchLandmarkCollection = async () => {
     setIsLoadingCollection(true);
     try {
-      const response = await fetch(`${Backend_URL}/api/v1/landmarks/collection`);
+      const response = await fetch(`${Backend_URL}/api/v1/captures`);
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`);
       }
       const data = await response.json();
-      setLandmarkCollection(data.landmarks || []);
+      setLandmarkCollection(data.captures || []);
       
       // Update user stats
       setUserData(prev => ({
         ...prev,
-        landmarksCollected: data.landmarks?.length || 0,
-        photosUploaded: data.landmarks?.length || 0
+        landmarksCollected: data.captures?.length || 0,
+        photosUploaded: data.captures?.length || 0
       }));
     } catch (error) {
       console.error('Error fetching collection:', error);
     } finally {
       setIsLoadingCollection(false);
+    }
+  };
+
+  // NEW: Check for nearby landmarks
+  const checkNearbyLandmarks = async (coords) => {
+    if (!coords) return;
+    
+    setIsCheckingLandmarks(true);
+    try {
+      const formData = new FormData();
+      formData.append('latitude', coords.latitude);
+      formData.append('longitude', coords.longitude);
+
+      const response = await fetch(`${Backend_URL}/api/v1/landmarks/nearby`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setNearestLandmark(data.landmark);
+      } else {
+        setNearestLandmark(null);
+      }
+    } catch (error) {
+      console.error('Error checking nearby landmarks:', error);
+      setNearestLandmark(null);
+    } finally {
+      setIsCheckingLandmarks(false);
     }
   };
 
@@ -125,15 +149,23 @@ function App() {
     }
   }, [stream]);
 
+  // NEW: Check nearby landmarks when coordinates change
+  useEffect(() => {
+    if (coordinates && currentPage === 'camera') {
+      checkNearbyLandmarks(coordinates);
+    }
+  }, [coordinates, currentPage]);
+
   const requestLocation = () => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCoordinates({
+          const newCoords = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             accuracy: position.coords.accuracy
-          });
+          };
+          setCoordinates(newCoords);
           setLocationError(null);
         },
         (error) => {
@@ -172,6 +204,9 @@ function App() {
       alert('Camera is not ready yet. Please wait a moment.');
       return;
     }
+    
+    // Clear previous result
+    setCaptureResult(null);
     
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -218,15 +253,31 @@ function App() {
           body: formData
         });
         
-        if (!response.ok) {
-          throw new Error(`Backend error: ${response.status}`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Success! Show the landmark details
+          setCaptureResult({
+            success: true,
+            landmark: data.landmark,
+            message: data.message
+          });
+          
+          // Refresh the nearby landmarks check
+          checkNearbyLandmarks(coords);
+        } else {
+          // Failed - show error message
+          setCaptureResult({
+            success: false,
+            message: data.detail || 'Failed to capture landmark'
+          });
         }
         
-        const data = await response.json();
-        alert(`✅ Landmark captured!\n\n📍 ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
-        
       } catch (error) {
-        alert('❌ Upload failed: ' + error.message);
+        setCaptureResult({
+          success: false,
+          message: 'Upload failed: ' + error.message
+        });
       }
     }, 'image/jpeg', 0.9);
   };
@@ -308,6 +359,7 @@ function App() {
               Point your camera at a landmark to learn its history
             </Typography>
 
+            {/* Location Status */}
             <Box sx={{ mb: 3 }}>
               {coordinates ? (
                 <Chip 
@@ -326,8 +378,69 @@ function App() {
                 <Chip label="📍 Getting location..." />
               )}
             </Box>
+
+            {/* NEW: Nearby Landmark Alert */}
+            {isCheckingLandmarks ? (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                🔍 Checking for nearby landmarks...
+              </Alert>
+            ) : nearestLandmark ? (
+              <Alert severity="success" sx={{ mb: 3 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                  🎯 {nearestLandmark.name}
+                </Typography>
+                <Typography variant="body2">
+                  {nearestLandmark.description}
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+                  📍 {nearestLandmark.distance}m away
+                </Typography>
+              </Alert>
+            ) : coordinates ? (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                No landmarks nearby. Move closer to a landmark to capture it!
+              </Alert>
+            ) : null}
+
+            {/* NEW: Capture Result */}
+            {captureResult && (
+              <Alert 
+                severity={captureResult.success ? "success" : "error"} 
+                sx={{ mb: 3 }}
+                onClose={() => setCaptureResult(null)}
+              >
+                {captureResult.success ? (
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      🎉 {captureResult.landmark.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      {captureResult.landmark.description}
+                    </Typography>
+                    {captureResult.landmark.historical_context && (
+                      <Typography variant="body2" sx={{ 
+                        mt: 2, 
+                        p: 1.5, 
+                        bgcolor: 'rgba(255,255,255,0.7)', 
+                        borderRadius: 1,
+                        fontStyle: 'italic'
+                      }}>
+                        📜 {captureResult.landmark.historical_context}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+                      Distance: {captureResult.landmark.distance}m
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body1">
+                    {captureResult.message}
+                  </Typography>
+                )}
+              </Alert>
+            )}
             
-            {/* edits here */}
+            {/* Map */}
             {coordinates && (
               <Box sx={{ 
                 height: 300, 
@@ -347,11 +460,12 @@ function App() {
                   <Marker position={[coordinates.latitude, coordinates.longitude]}>
                     <Popup>You are here!</Popup>
                   </Marker>
+                  <RecenterMap coordinates={coordinates} />
                 </MapContainer>
               </Box>
             )}
-              
 
+            {/* Camera View */}
             <Box sx={{ 
               bgcolor: 'black', 
               borderRadius: 2, 
@@ -378,6 +492,7 @@ function App() {
               )}
             </Box>
 
+            {/* Camera Controls */}
             <Box sx={{ textAlign: 'center' }}>
               {!stream ? (
                 <Box
@@ -399,18 +514,18 @@ function App() {
                 <Box
                   onClick={capturePhoto}
                   sx={{
-                    bgcolor: isCameraReady ? '#4caf50' : '#ccc',
+                    bgcolor: (isCameraReady && nearestLandmark) ? '#4caf50' : '#ccc',
                     color: 'white',
                     py: 2,
                     px: 4,
                     borderRadius: '50px',
-                    cursor: isCameraReady ? 'pointer' : 'not-allowed',
+                    cursor: (isCameraReady && nearestLandmark) ? 'pointer' : 'not-allowed',
                     display: 'inline-block',
-                    '&:hover': isCameraReady ? { bgcolor: '#45a049' } : {}
+                    '&:hover': (isCameraReady && nearestLandmark) ? { bgcolor: '#45a049' } : {}
                   }}
                 >
                   <Typography variant="h6">
-                    {isCameraReady ? 'Capture' : 'Loading...'}
+                    {!isCameraReady ? 'Loading...' : !nearestLandmark ? 'No Landmarks Nearby' : '📸 Capture Landmark'}
                   </Typography>
                 </Box>
               )}
@@ -463,9 +578,9 @@ function App() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                 gap: 3
               }}>
-                {landmarkCollection.map((landmark) => (
+                {landmarkCollection.map((capture) => (
                   <Card 
-                    key={landmark.id}
+                    key={capture.id}
                     sx={{ 
                       height: '100%',
                       display: 'flex',
@@ -480,39 +595,49 @@ function App() {
                     <CardMedia
                       component="img"
                       height="200"
-                      image={landmark.image_url}
-                      alt="Landmark"
+                      image={capture.image_url}
+                      alt="Landmark capture"
                       sx={{ objectFit: 'cover' }}
                     />
                     <CardContent sx={{ flexGrow: 1 }}>
                       <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                        Landmark #{landmark.id}
+                        {capture.landmarks?.name || `Landmark #${capture.id}`}
                       </Typography>
+                      
+                      {capture.landmarks?.description && (
+                        <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
+                          {capture.landmarks.description}
+                        </Typography>
+                      )}
                       
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                         <LocationOnIcon sx={{ fontSize: 18, mr: 1, color: '#2196f3' }} />
                         <Typography variant="body2" color="text.secondary">
-                          {landmark.latitude?.toFixed(4)}, {landmark.longitude?.toFixed(4)}
+                          {capture.latitude?.toFixed(4)}, {capture.longitude?.toFixed(4)}
                         </Typography>
                       </Box>
+
+                      {capture.distance_from_landmark_meters && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                          📏 Captured from {capture.distance_from_landmark_meters}m away
+                        </Typography>
+                      )}
 
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CalendarTodayIcon sx={{ fontSize: 16, mr: 1, color: '#757575' }} />
                         <Typography variant="body2" color="text.secondary">
-                          {formatDate(landmark.timestamp)}
+                          {formatDate(capture.timestamp || capture.created_at)}
                         </Typography>
                       </Box>
 
-                      {landmark.created_at && (
-                        <Box sx={{ mt: 2 }}>
-                          <Chip 
-                            label="Captured"
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                        </Box>
-                      )}
+                      <Box sx={{ mt: 2 }}>
+                        <Chip 
+                          label={capture.landmarks?.category || "Captured"}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Box>
                     </CardContent>
                   </Card>
                 ))}
