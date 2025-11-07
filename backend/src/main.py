@@ -17,9 +17,8 @@ app.add_middleware(
 )
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """
-    Calculate distance between two GPS coordinates using Haversine formula
-    Returns distance in meters
+    """ Calculate distance between two GPS coordinates using Haversine formula.
+    Returns distance in meters 
     """
     R = 6371e3  # Earth's radius in meters
     
