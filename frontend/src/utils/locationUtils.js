@@ -4,8 +4,7 @@ const deg2rad = (deg) => {
 }
 
 /**
- * Calculates the distance between two latitude/longitude points 
- * using the Haversine formula.
+ * Calculates the distance between two latitude/longitude points
  * @returns {number} Distance in kilometers.
  */
 export const getDistanceKm = (lat1, lon1, lat2, lon2) => {

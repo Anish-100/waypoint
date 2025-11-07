@@ -7,7 +7,7 @@ from typing import Optional
 
 app = FastAPI()
 
-# CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "https://waypoint-1-r7sz.onrender.com"],
@@ -15,9 +15,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# ============== HELPER FUNCTIONS ==============
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """
@@ -73,9 +70,6 @@ def find_nearest_landmark(user_lat: float, user_lon: float):
     
     return None
 
-
-# ============== ENDPOINTS ==============
-
 @app.post("/api/v1/landmarks/nearby")
 async def check_nearby_landmarks(
     latitude: float = Form(...),
@@ -113,7 +107,7 @@ async def identify_landmark(
     """
     Upload photo and check if near a landmark (simplified - no user tracking)
     """
-    # STEP 1: Find nearest landmark
+    # Find nearest landmark
     nearest = find_nearest_landmark(latitude, longitude)
     
     if not nearest:
@@ -125,14 +119,14 @@ async def identify_landmark(
     landmark = nearest['landmark']
     distance = nearest['distance']
     
-    # STEP 2: Generate unique filename
+    # Generate unique filename
     file_id = str(uuid4())
     file_name = f"{file_id}.jpg"
     
-    # STEP 3: Define the path in the bucket
+    # Define the path in the bucket
     storage_path = f"landmark-captures/{file_name}"
     
-    # STEP 4: Read and upload image
+    # Read and upload image
     image_content = await image.read()
     
     supabase.storage.from_("game-assets").upload(
@@ -141,10 +135,10 @@ async def identify_landmark(
         {"content-type": "image/jpeg"}
     )
     
-    # STEP 5: Get the public URL
+    # Get the public URL
     image_url = supabase.storage.from_("game-assets").get_public_url(storage_path)
     
-    # STEP 6: Save capture to database (without user_id)
+    # Save capture to database (without user_id)
     result = supabase.table("landmark_captures").insert({
         "landmark_id": landmark['id'],
         "image_url": image_url,

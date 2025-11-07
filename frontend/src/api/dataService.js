@@ -1,4 +1,4 @@
-import { supabase } from './supabase'; // Imports the client setup from Step A
+import { supabase } from './supabase'; 
 
 // Function to fetch all landmarks to plot on the map
 export const fetchLandmarks = async () => {
@@ -23,7 +23,7 @@ export const recordCollection = async (userId, cardId) => {
     });
 
     if (error) {
-        // This is where you handle the "already collected" error from the function
+        // handles "already collected" error from the function
         console.error("Collection failed:", error);
         return false;
     }

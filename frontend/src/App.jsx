@@ -295,7 +295,7 @@ function App() {
         const data = await response.json();
         
         if (response.ok && data.success) {
-          // Success! Show the landmark details
+          // Show the landmark details
           setCaptureResult({
             success: true,
             landmark: data.landmark,

@@ -1,4 +1,4 @@
-/* ===== HEADER ===== */
+/* HEADER */
 .header {
   background: linear-gradient(135deg, #7468c2ff 0%, #8b5cf6 100%);
   color: white;
@@ -25,7 +25,7 @@
   opacity: 0.95;
 }
 
-/* ===== RESPONSIVE HEADER ===== */
+/* RESPONSIVE HEADER */
 @media (max-width: 768px) {
   .header {
     padding: var(--spacing-md);

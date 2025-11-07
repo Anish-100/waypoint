@@ -1,9 +1,8 @@
 from dotenv import load_dotenv
 import os
 from supabase import create_client, Client
-'''
-Gets the URL's from the env file
-'''
+
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -12,7 +11,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_API_KEY")
 
 # Supabase storage configuration
-STORAGE_BUCKET = "game-assets"  # Your bucket name
+STORAGE_BUCKET = "game-assets"  # bucket name
 PHOTOS_FOLDER = "landmark_photos"  # Folder inside bucket
 
 # Validate that required env vars are present

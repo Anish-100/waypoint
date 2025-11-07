@@ -1,24 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
-// ⚠️ IMPORTANT: These variables are imported from your local .env file.
-// This keeps your keys secure and out of version control.
+// variables are imported from our local .env file.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@env'; 
 
-// --- 1. Client Initialization ---
+// Client Initialization 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    // Standard configuration for mobile applications to manage user sessions
-    // Persists the user session so they don't have to log in every time
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false, // Prevents issues with deep linking/auth flow on mobile
   },
 });
 
-// --- 2. Connection Test Function (Optional but Recommended) ---
+// Connection Test Function 
 /**
  * A simple function to test if the Supabase connection is active and 
  * can read data from the history_cards table (read-only access).
  */
+
 export const checkSupabaseConnection = async () => {
     try {
         const { data, error } = await supabase

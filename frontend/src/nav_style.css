@@ -1,10 +1,10 @@
-/* ===== NAVIGATION ===== */
+/* NAVIGATION */
 .nav-container {
   display: flex;
   justify-content: space-around;
-  background: var(--surface); /* CHANGED: from #702963 to Martinique */
+  background: var(--surface); 
   box-shadow: var(--shadow-sm);
-  border-bottom: 1px solid var(--border-light); /* CHANGED: from --border to a more subtle one */
+  border-bottom: 1px solid var(--border-light); 
   position: sticky;
   top: 0;
   z-index: 90;
@@ -20,14 +20,14 @@
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  color: var(--text-secondary); /* This is Spun Pearl, good for inactive */
+  color: var(--text-secondary); 
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: var(--font-sans);
 }
 
 .nav-item:hover {
-  background: var(--surface-purple-light); /* CHANGED: from #f5f5f5 to a subtle dark hover */
+  background: var(--surface-purple-light); 
 }
 
 .nav-item:active {
@@ -35,8 +35,8 @@
 }
 
 .nav-item.active {
-  color: var(--primary-color); /* This is Studio, perfect for active */
-  background: rgba(95, 67, 178, 0.1); /* CHANGED: from blue to a 10% Studio purple */
+  color: var(--primary-color); 
+  background: rgba(95, 67, 178, 0.1); 
   border-bottom-color: var(--primary-color);
 }
 
@@ -52,7 +52,7 @@
   letter-spacing: 0.05em;
 }
 
-/* ===== RESPONSIVE NAVIGATION ===== */
+/* RESPONSIVE NAVIGATION */
 @media (max-width: 480px) {
   .nav-item {
     padding: var(--spacing-sm);

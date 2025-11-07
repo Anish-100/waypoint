@@ -1,9 +1,9 @@
-/* ===== CAMERA CONTAINER ===== */
+/* CAMERA CONTAINER  */
 .camera-page {
   /* Container for all camera-related elements */
 }
 
-/* ===== LOCATION STATUS ===== */
+/* LOCATION STATUS */
 .location-status {
   margin-bottom: var(--spacing-md);
 }
@@ -42,7 +42,7 @@
   background: rgba(244, 67, 54, 0.15);
 }
 
-/* ===== ALERTS ===== */
+/* ALERTS */
 .alert {
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
@@ -112,7 +112,7 @@
   font-size: 0.875rem;
 }
 
-/* ===== MAP CONTAINER ===== */
+/* MAP CONTAINER */
 .map-container {
   height: 300px;
   margin-bottom: var(--spacing-lg);
@@ -121,7 +121,7 @@
   box-shadow: var(--shadow-md);
 }
 
-/* ===== CAMERA VIEW ===== */
+/* CAMERA VIEW */
 .camera-view {
   background: black;
   border-radius: var(--radius-lg);
@@ -160,7 +160,7 @@
   font-weight: 500;
 }
 
-/* ===== CAMERA CONTROLS ===== */
+/* CAMERA CONTROLS */
 .camera-controls {
   text-align: center;
 }
@@ -232,7 +232,7 @@
   background: #999;
 }
 
-/* ===== CAMERA HINTS ===== */
+/* CAMERA HINTS */
 .camera-hint {
   text-align: center;
   padding: var(--spacing-md);
@@ -253,7 +253,7 @@
   margin-top: var(--spacing-xs);
 }
 
-/* ===== RESPONSIVE CAMERA ===== */
+/* RESPONSIVE CAMERA */
 @media (max-width: 768px) {
   .camera-view {
     height: 300px;

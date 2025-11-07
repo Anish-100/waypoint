@@ -1,4 +1,4 @@
-/* ===== CSS RESET & BASE ===== */
+/* CSS RESET & BASE */
 * {
   margin: 0;
   padding: 0;
@@ -6,12 +6,11 @@
 }
 
 :root {
-  /* New Dark Palette (from image) */
-  --primary-color: #eeecc9;       /* Studio (for buttons/accents) */
-  --primary-dark: #4e3794;        /* Darker Studio (Generated for hover) */
-  --primary-light: #7e64c9;       /* Lighter Studio (Generated) */
-  --secondary-color: #7e64c9;     /* Re-using light */
-  --secondary-dark: #5f43b2;      /* Re-using primary */
+  --primary-color: #eeecc9;       /* for buttons/accents */
+  --primary-dark: #4e3794;        /* for hover */
+  --primary-light: #7e64c9;      
+  --secondary-color: #7e64c9;     
+  --secondary-dark: #5f43b2;     
   
   /* Accent Colors */
   --success-color: #10b981;
@@ -19,20 +18,20 @@
   --warning-color: #f59e0b;
   
   /* Backgrounds (Dark Mode) */
-  --background: linear-gradient(135deg, #010101 0%, #3a3153 100%); /* Black to Martinique */
-  --background-solid: #010101;     /* Black */
-  --surface: #3a3153;           /* Martinique (for cards) */
-  --surface-purple-light: #4b406a; /* Lighter Martinique (generated) */
-  --surface-purple: #5c4f82;      /* Even lighter Martinique (generated) */
+  --background: linear-gradient(135deg, #010101 0%, #3a3153 100%); 
+  --background-solid: #010101;    
+  --surface: #3a3153;           /* for cards */
+  --surface-purple-light: #4b406a; 
+  --surface-purple: #5c4f82;     
   
-  /* Text Colors (Light on Dark) */
-  --text-primary: #fefdfd;       /* Soft Peach (White) - For headings and important text */
-  --text-secondary: #b1aebb;     /* Spun Pearl (Light Gray) - For subtext/body copy */
+  /* Text Colors */
+  --text-primary: #fefdfd;       /* For headings and important text */
+  --text-secondary: #b1aebb;     /* For subtext */
   --text-on-purple: #fefdfd;     /* White on buttons */
   
   /* Borders */
-  --border: #b1aebb;             /* Spun Pearl */
-  --border-light: rgba(177, 174, 187, 0.3); /* Transparent Spun Pearl */
+  --border: #b1aebb;             
+  --border-light: rgba(177, 174, 187, 0.3); 
   
   /* Spacing */
   --spacing-xs: 0.5rem;
@@ -69,14 +68,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== APP CONTAINER ===== */
+/* APP CONTAINER */
 .app {
   min-height: 100vh;
   background: var(--background-solid);
   background: var(--background);
 }
 
-/* ===== MAIN CONTENT ===== */
+/* MAIN CONTENT */
 .main-content {
   padding: var(--spacing-lg);
   max-width: 1200px;
@@ -88,7 +87,7 @@ body {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: var(--spacing-xs);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
   letter-spacing: -0.025em;
 }
 
@@ -99,7 +98,7 @@ body {
   line-height: 1.5;
 }
 
-/* ===== BUTTONS ===== */
+/* BUTTONS */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -126,7 +125,7 @@ body {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  color: var(--text-on-purple); /* Changed to var */
+  color: var(--text-on-purple);
   box-shadow: var(--shadow-md);
 }
 
@@ -136,14 +135,14 @@ body {
 }
 
 .btn-primary:disabled {
-  background: #4b406a; /* Darker gray */
+  background: #4b406a; 
   color: var(--text-secondary);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* ===== CARDS ===== */
+/* CARDS */
 .card {
   background: var(--surface);
   border-radius: var(--radius-lg);
@@ -158,7 +157,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* ===== COLLECTION GRID ===== */
+/* COLLECTION GRID */
 .collection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -170,7 +169,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface); /* CHANGED: from white */
+  background: var(--surface); 
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -202,7 +201,7 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: var(--spacing-xs);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
 }
 
 .collection-card-description {
@@ -233,14 +232,14 @@ body {
   color: var(--primary-color);
 }
 
-/* ===== PROFILE STYLES ===== */
+/* PROFILE STYLES */
 .profile-header {
   text-align: center;
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, var(--surface-purple-light) 0%, var(--surface) 100%); /* CHANGED: from white */
+  background: linear-gradient(135deg, var(--surface-purple-light) 0%, var(--surface) 100%); 
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-light); /* CHANGED: from --border */
+  border: 1px solid var(--border-light); 
 }
 
 .profile-avatar {
@@ -254,14 +253,14 @@ body {
   margin: 0 auto var(--spacing-md);
   font-size: 3rem;
   box-shadow: var(--shadow-lg);
-  border: 4px solid var(--surface); /* CHANGED: from white */
+  border: 4px solid var(--surface); 
 }
 
 .profile-username {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: var(--spacing-xs);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
 }
 
 .profile-member-since {
@@ -279,7 +278,7 @@ body {
 .stat-card {
   text-align: center;
   padding: var(--spacing-lg);
-  background: var(--surface); /* CHANGED: from white */
+  background: var(--surface); 
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-light);
@@ -296,14 +295,13 @@ body {
   font-size: 3rem;
   display: block;
   margin-bottom: var(--spacing-xs);
-  filter: drop-shadow(0 2px 4px rgba(95, 67, 178, 0.2)); /* CHANGED: shadow color */
-}
+  filter: drop-shadow(0 2px 4px rgba(95, 67, 178, 0.2)); 
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
   margin: var(--spacing-xs) 0;
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
 }
 
 .stat-label {
@@ -316,14 +314,14 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: var(--spacing-md);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
 }
 
-/* ===== EMPTY STATES ===== */
+/* EMPTY STATES */
 .empty-state {
   text-align: center;
   padding: var(--spacing-3xl) var(--spacing-lg);
-  background: var(--surface); /* CHANGED: from white */
+  background: var(--surface); 
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   border: 2px dashed var(--border);
@@ -341,7 +339,7 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: var(--spacing-xs);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
 }
 
 .empty-state-description {
@@ -350,7 +348,7 @@ body {
   line-height: 1.6;
 }
 
-/* ===== LOADING STATES ===== */
+/* LOADING STATES */
 .loading-container {
   display: flex;
   justify-content: center;
@@ -364,7 +362,7 @@ body {
   font-weight: 600;
 }
 
-/* ===== CHIPS/BADGES ===== */
+/* CHIPS/BADGES */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -388,18 +386,18 @@ body {
 }
 
 .chip-info {
-  background: rgba(95, 67, 178, 0.1); /* CHANGED: color */
+  background: rgba(95, 67, 178, 0.1); 
   color: var(--primary-color);
-  border: 1px solid rgba(95, 67, 178, 0.3); /* CHANGED: color */
+  border: 1px solid rgba(95, 67, 178, 0.3); 
 }
 
 .chip-purple {
   background: var(--surface-purple);
-  color: var(--text-primary); /* CHANGED: from --primary-dark */
+  color: var(--text-primary); 
   border: 1px solid var(--border);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .main-content {
     padding: var(--spacing-md);
@@ -467,4 +465,6 @@ body {
     font-size: 0.75rem;
     color: var(--text-secondary);
     margin: 0;
+}
+
 }

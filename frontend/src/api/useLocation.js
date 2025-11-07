@@ -14,14 +14,14 @@ export const useLocation = (landmarks) => {
         let locationWatcher = null;
         
         const startLocationTracking = async () => {
-            // 1. Request Permission
+            // Request Permission
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 setLocationError('Permission to access location was denied. Cannot play game.');
                 return;
             }
 
-            // 2. Start Watching Location
+            // Start Watching Location
             locationWatcher = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.High,
@@ -33,7 +33,7 @@ export const useLocation = (landmarks) => {
                     const newLocation = { latitude, longitude };
                     setUserLocation(newLocation);
                     
-                    // 3. Check Proximity Immediately (See section 3 below)
+                    // Check Proximity Immediately (See section 3 below)
                     checkProximity(newLocation, landmarks);
                 }
             );
@@ -63,8 +63,6 @@ export const useLocation = (landmarks) => {
             );
 
             if (distance <= PROXIMITY_THRESHOLD_KM) {
-                // Assuming you'd have a check here if the card is already collected
-                // For now, we just take the first one found near the threshold
                 closestLandmark = landmark; 
                 break;
             }
