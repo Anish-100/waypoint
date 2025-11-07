@@ -1,18 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
-import './App.css';
-import './ProfileStyles.css';
+_import { useState, useRef, useEffect } from 'react';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
-
- // Needed to distinguish between the local or render hosts
-  // Detects automatically
-  const getBackendUrl = () => {
-    if (window.location.hostname === 'localhost') {
-      return 'http://localhost:8000';
-    }
-    return 'https://waypoint-sk0h.onrender.com'; // Deployed backend
-  };
-  const Backend_URL = getBackendUrl();
-
+// Detect backend URL
+const getBackendUrl = () => {
+  if (window.location.hostname === 'localhost') {
+    return 'http://localhost:8000';
+  }
+  return 'https://waypoint-sk0h.onrender.com';
+};
+const Backend_URL = getBackendUrl();
 
 function App() {
   const [stream, setStream] = useState(null);
@@ -20,10 +24,10 @@ function App() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [coordinates, setCoordinates] = useState(null);
   const [locationError, setLocationError] = useState(null);
+  const [landmarkCollection, setLandmarkCollection] = useState([]);
+  const [isLoadingCollection, setIsLoadingCollection] = useState(false);
   const videoRef = useRef();
 
-
-  // Mock user data - replace with real data
   const [userData, setUserData] = useState({
     username: 'Explorer',
     joinDate: 'November 2024',
@@ -34,13 +38,41 @@ function App() {
     badges: []
   });
 
+  // Fetch user's landmark collection
+  const fetchLandmarkCollection = async () => {
+    setIsLoadingCollection(true);
+    try {
+      const response = await fetch(`${Backend_URL}/api/v1/landmarks/collection`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`);
+      }
+      const data = await response.json();
+      setLandmarkCollection(data.landmarks || []);
+      
+      // Update user stats
+      setUserData(prev => ({
+        ...prev,
+        landmarksCollected: data.landmarks?.length || 0,
+        photosUploaded: data.landmarks?.length || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching collection:', error);
+    } finally {
+      setIsLoadingCollection(false);
+    }
+  };
 
-  // Request location permission on mount
+  // Load collection when viewing collection page
+  useEffect(() => {
+    if (currentPage === 'collection') {
+      fetchLandmarkCollection();
+    }
+  }, [currentPage]);
+
   useEffect(() => {
     requestLocation();
   }, []);
 
-  // Cleanup stream on unmount
   useEffect(() => {
     return () => {
       if (stream) {
@@ -49,13 +81,11 @@ function App() {
     };
   }, [stream]);
 
-  // Handle video stream assignment when stream changes
   useEffect(() => {
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
       setIsCameraReady(false);
       
-      // Wait for video to be ready and play
       videoRef.current.onloadedmetadata = async () => {
         try {
           await videoRef.current.play();
@@ -78,10 +108,8 @@ function App() {
             accuracy: position.coords.accuracy
           });
           setLocationError(null);
-          console.log('Location acquired:', position.coords);
         },
         (error) => {
-          console.log('Location error:', error);
           setLocationError(error.message);
         },
         {
@@ -107,9 +135,7 @@ function App() {
       });
       
       setStream(mediaStream);
-      console.log('Media stream acquired');
     } catch (error) {
-      console.log('Camera access denied:', error);
       alert('Camera access is required to capture landmarks. Please enable camera permissions in your browser settings.');
     }
   };
@@ -132,7 +158,6 @@ function App() {
           processCapturedPhoto(currentCoords);
         },
         (error) => {
-          console.log('Location unavailable at capture:', error);
           processCapturedPhoto(coordinates);
         },
         {
@@ -147,256 +172,391 @@ function App() {
   };
 
   const processCapturedPhoto = async (coords) => {
-  const canvas = document.createElement('canvas');
-  canvas.width = videoRef.current.videoWidth;
-  canvas.height = videoRef.current.videoHeight;
-  const context = canvas.getContext('2d');
-  context.drawImage(videoRef.current, 0, 0);
-  
-  canvas.toBlob(async (blob) => {
-    try {
-      const formData = new FormData();
-      formData.append('image', blob, 'photo.jpg');
-      formData.append('latitude', coords.latitude);
-      formData.append('longitude', coords.longitude);
-      formData.append('timestamp', new Date().toISOString());
-      
-      console.log('Uploading to backend...');
-      
-      const response = await fetch(`${Backend_URL}/api/v1/landmarks/identify`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(videoRef.current, 0, 0);
+    
+    canvas.toBlob(async (blob) => {
+      try {
+        const formData = new FormData();
+        formData.append('image', blob, 'photo.jpg');
+        formData.append('latitude', coords.latitude);
+        formData.append('longitude', coords.longitude);
+        formData.append('timestamp', new Date().toISOString());
+        
+        const response = await fetch(`${Backend_URL}/api/v1/landmarks/identify`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        alert(`✅ Landmark captured!\n\n📍 ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
+        
+      } catch (error) {
+        alert('❌ Upload failed: ' + error.message);
       }
-      
-      const data = await response.json();
-      console.log('✅ Success:', data);
-      
-      alert(`✅ Landmark captured!\n\n📍 ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`);
-      
-    } catch (error) {
-      console.error('❌ Error:', error);
-      alert('❌ Upload failed: ' + error.message);
-    }
-  }, 'image/jpeg', 0.9);
-};
+    }, 'image/jpeg', 0.9);
+  };
 
-
+  const formatDate = (timestamp) => {
+    if (!timestamp) return 'Unknown date';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className="app">
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
       {/* Header */}
-      <header className="header">
-        <h1 className="app-title">Waypoint</h1>
-        <p className="app-subtitle"> A different way to explore! </p>
-      </header>
+      <Box sx={{ 
+        bgcolor: '#2196f3', 
+        color: 'white', 
+        p: 3, 
+        textAlign: 'center',
+        boxShadow: 2
+      }}>
+        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+          Waypoint
+        </Typography>
+        <Typography variant="subtitle1">
+          A different way to explore!
+        </Typography>
+      </Box>
 
       {/* Navigation */}
-      <nav className="nav">
-        <button 
-          className={`nav-button ${currentPage === 'camera' ? 'active' : ''}`}
-          onClick={() => setCurrentPage('camera')}
-        >
-          <span className="nav-icon"> 📷 </span>
-          <span className="nav-label">Discover</span>
-        </button>
-        
-        <button 
-          className={`nav-button ${currentPage === 'collection' ? 'active' : ''}`}
-          onClick={() => setCurrentPage('collection')}
-        >
-          <span className="nav-icon">🎴</span>
-          <span className="nav-label">Collection</span>
-        </button>
-
-        <button 
-          className={`nav-button ${currentPage === 'profile' ? 'active' : ''}`}
-          onClick={() => setCurrentPage('profile')}
-        >
-          <span className="nav-icon">👤</span>
-          <span className="nav-label">Profile</span>
-        </button>
-      </nav>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-around', 
+        bgcolor: 'white',
+        boxShadow: 1,
+        borderBottom: '1px solid #e0e0e0'
+      }}>
+        {[
+          { id: 'camera', icon: '📷', label: 'Discover' },
+          { id: 'collection', icon: '🎴', label: 'Collection' },
+          { id: 'profile', icon: '👤', label: 'Profile' }
+        ].map(nav => (
+          <Box
+            key={nav.id}
+            onClick={() => setCurrentPage(nav.id)}
+            sx={{
+              flex: 1,
+              py: 2,
+              textAlign: 'center',
+              cursor: 'pointer',
+              bgcolor: currentPage === nav.id ? '#e3f2fd' : 'transparent',
+              borderBottom: currentPage === nav.id ? '3px solid #2196f3' : 'none',
+              transition: 'all 0.3s',
+              '&:hover': { bgcolor: '#f5f5f5' }
+            }}
+          >
+            <Typography sx={{ fontSize: '24px' }}>{nav.icon}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>
+              {nav.label}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
 
       {/* Main Content */}
-      <main className="main-content">
+      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
         {/* Camera Page */}
         {currentPage === 'camera' && (
-          <div className="page camera-page">
-            <h2 className="page-title">Discover Landmarks</h2>
-            <p className="page-description">
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+              Discover Landmarks
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               Point your camera at a landmark to learn its history
-            </p>
-            <div className="location-status">
+            </Typography>
+
+            <Box sx={{ mb: 3 }}>
               {coordinates ? (
-                <p className="location-success">
-                  📍 Location: {coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}
-                  <span className="accuracy"> (±{coordinates.accuracy.toFixed(0)}m)</span>
-                </p>
+                <Chip 
+                  icon={<LocationOnIcon />}
+                  label={`${coordinates.latitude.toFixed(4)}, ${coordinates.longitude.toFixed(4)} (±${coordinates.accuracy.toFixed(0)}m)`}
+                  color="success"
+                  sx={{ mb: 2 }}
+                />
               ) : locationError ? (
-                <p className="location-error">
-                  ⚠️ Location unavailable: {locationError}
-                  <button className="retry-btn" onClick={requestLocation}>Retry</button>
-                </p>
+                <Chip 
+                  label={`⚠️ ${locationError}`}
+                  color="error"
+                  onClick={requestLocation}
+                />
               ) : (
-                <p className="location-loading">📍 Getting location...</p>
+                <Chip label="📍 Getting location..." />
               )}
-            </div>
-            
-            <div className="camera-container">
-              <div className="camera-box">
-                {!stream ? (
-                  <div className="camera-placeholder">
-                    <span className="placeholder-icon">📸</span>
-                    <p>Camera inactive</p>
-                  </div>
-                ) : (
-                  <video 
-                    ref={videoRef} 
-                    autoPlay 
-                    playsInline
-                    muted
-                    className="camera-video"
-                  />
-                )}
-              </div>
-            </div>
+            </Box>
 
-            <div className="button-container">
+            <Box sx={{ 
+              bgcolor: 'black', 
+              borderRadius: 2, 
+              overflow: 'hidden',
+              mb: 3,
+              height: 400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               {!stream ? (
-                <button className="btn btn-primary" onClick={handleCamera}>
-                  <span className="btn-icon">📷</span>
-                  Enable Camera
-                </button>
+                <Box sx={{ textAlign: 'center', color: 'white' }}>
+                  <Typography variant="h1">📸</Typography>
+                  <Typography>Camera inactive</Typography>
+                </Box>
               ) : (
-                <button 
-                  className="btn btn-capture" 
-                  onClick={capturePhoto}
-                  disabled={!isCameraReady}
-                >
-                  <span className="capture-ring"></span>
-                  {isCameraReady ? 'Capture' : 'Loading...'}
-                </button>
+                <video 
+                  ref={videoRef} 
+                  autoPlay 
+                  playsInline
+                  muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               )}
-            </div>
+            </Box>
 
-            {stream && isCameraReady && (
-              <div className="camera-hint">
-                <p>💡 Tip: Get close enough to clearly see the landmark</p>
-                {coordinates && (
-                  <p>✓ Location tracking active for better identification</p>
-                )}
-              </div>
-            )}
-          </div>
+            <Box sx={{ textAlign: 'center' }}>
+              {!stream ? (
+                <Box
+                  onClick={handleCamera}
+                  sx={{
+                    bgcolor: '#2196f3',
+                    color: 'white',
+                    py: 2,
+                    px: 4,
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    '&:hover': { bgcolor: '#1976d2' }
+                  }}
+                >
+                  <Typography variant="h6">📷 Enable Camera</Typography>
+                </Box>
+              ) : (
+                <Box
+                  onClick={capturePhoto}
+                  sx={{
+                    bgcolor: isCameraReady ? '#4caf50' : '#ccc',
+                    color: 'white',
+                    py: 2,
+                    px: 4,
+                    borderRadius: '50px',
+                    cursor: isCameraReady ? 'pointer' : 'not-allowed',
+                    display: 'inline-block',
+                    '&:hover': isCameraReady ? { bgcolor: '#45a049' } : {}
+                  }}
+                >
+                  <Typography variant="h6">
+                    {isCameraReady ? 'Capture' : 'Loading...'}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
         )}
 
-        {/* Collection Page */}
+        {/* Collection Page with Material UI Cards */}
         {currentPage === 'collection' && (
-          <div className="page collection-page">
-            <h2 className="page-title">My Collection</h2>
-            <p className="page-description">
-              Your discovered landmarks will appear here
-            </p>
-            
-            <div className="collection-grid">
-              <div className="empty-state">
-                <span className="empty-icon">🗺️</span>
-                <h3>No Landmarks Yet</h3>
-                <p>Start exploring to build your collection!</p>
-                <button 
-                  className="btn btn-secondary"
+          <Box>
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+              My Collection
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Your discovered landmarks
+            </Typography>
+
+            {isLoadingCollection ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress />
+              </Box>
+            ) : landmarkCollection.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="h1" sx={{ mb: 2 }}>🗺️</Typography>
+                <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+                  No Landmarks Yet
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Start exploring to build your collection!
+                </Typography>
+                <Box
                   onClick={() => setCurrentPage('camera')}
+                  sx={{
+                    bgcolor: '#2196f3',
+                    color: 'white',
+                    py: 2,
+                    px: 4,
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    '&:hover': { bgcolor: '#1976d2' }
+                  }}
                 >
                   Start Discovering
-                </button>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            ) : (
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                gap: 3
+              }}>
+                {landmarkCollection.map((landmark) => (
+                  <Card 
+                    key={landmark.id}
+                    sx={{ 
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 4
+                      }
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={landmark.image_url}
+                      alt="Landmark"
+                      sx={{ objectFit: 'cover' }}
+                    />
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                        Landmark #{landmark.id}
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <LocationOnIcon sx={{ fontSize: 18, mr: 1, color: '#2196f3' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {landmark.latitude?.toFixed(4)}, {landmark.longitude?.toFixed(4)}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CalendarTodayIcon sx={{ fontSize: 16, mr: 1, color: '#757575' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {formatDate(landmark.timestamp)}
+                        </Typography>
+                      </Box>
+
+                      {landmark.created_at && (
+                        <Box sx={{ mt: 2 }}>
+                          <Chip 
+                            label="Captured"
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+            )}
+          </Box>
         )}
 
         {/* Profile Page */}
         {currentPage === 'profile' && (
-          <div className="page profile-page">
-            <div className="profile-header">
-              <div className="profile-avatar">
-                <span className="avatar-icon">👤</span>
-              </div>
-              <h2 className="profile-username">{userData.username}</h2>
-              <p className="profile-join-date">Member since {userData.joinDate}</p>
-            </div>
+          <Box>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Box sx={{ 
+                width: 100, 
+                height: 100, 
+                bgcolor: '#2196f3', 
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 2
+              }}>
+                <Typography variant="h2">👤</Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+                {userData.username}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Member since {userData.joinDate}
+              </Typography>
+            </Box>
 
-            <div className="profile-stats">
-              <div className="stat-card">
-                <div className="stat-icon">⭐</div>
-                <div className="stat-value">{userData.totalPoints}</div>
-                <div className="stat-label">Total Points</div>
-              </div>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: 2,
+              mb: 4
+            }}>
+              {[
+                { icon: '⭐', value: userData.totalPoints, label: 'Total Points' },
+                { icon: '🏛️', value: userData.landmarksCollected, label: 'Landmarks' },
+                { icon: '📸', value: userData.photosUploaded, label: 'Photos' },
+                { icon: '🏆', value: `Level ${userData.level}`, label: 'Explorer Level' }
+              ].map((stat, idx) => (
+                <Card key={idx} sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h3">{stat.icon}</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 600, my: 1 }}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {stat.label}
+                  </Typography>
+                </Card>
+              ))}
+            </Box>
 
-              <div className="stat-card">
-                <div className="stat-icon">🏛️</div>
-                <div className="stat-value">{userData.landmarksCollected}</div>
-                <div className="stat-label">Landmarks</div>
-              </div>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+              🏅 Achievements
+            </Typography>
+            <Card sx={{ p: 3, textAlign: 'center', mb: 3 }}>
+              <Typography variant="body1" color="text.secondary">
+                🎯 No achievements yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Keep exploring to earn badges!
+              </Typography>
+            </Card>
 
-              <div className="stat-card">
-                <div className="stat-icon">📸</div>
-                <div className="stat-value">{userData.photosUploaded}</div>
-                <div className="stat-label">Photos</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-icon">🏆</div>
-                <div className="stat-value">Level {userData.level}</div>
-                <div className="stat-label">Explorer Level</div>
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <h3 className="section-title">🏅 Achievements TODO</h3>
-              <div className="achievements-grid">
-                {userData.badges.length > 0 ? (
-                  userData.badges.map((badge, index) => (
-                    <div key={index} className="achievement-badge">
-                      <span className="badge-icon">{badge.icon}</span>
-                      <span className="badge-name">{badge.name}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="empty-achievements">
-                    <p>🎯 No achievements yet</p>
-                    <p className="achievement-hint">Keep exploring to earn badges!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="profile-section">
-              <h3 className="section-title">📊 Recent Activity TODO</h3>
-              <div className="activity-list">
-                <div className="empty-activity">
-                  <p>📍 No recent activity</p>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={() => setCurrentPage('camera')}
-                  >
-                    Start Exploring
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="profile-actions">
-              <button className="btn btn-outline">Edit Profile TODO</button>
-              <button className="btn btn-outline">Settings TODO</button>
-            </div>
-          </div>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+              📊 Recent Activity
+            </Typography>
+            <Card sx={{ p: 3, textAlign: 'center', mb: 3 }}>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                📍 No recent activity
+              </Typography>
+              <Box
+                onClick={() => setCurrentPage('camera')}
+                sx={{
+                  bgcolor: '#2196f3',
+                  color: 'white',
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  '&:hover': { bgcolor: '#1976d2' }
+                }}
+              >
+                Start Exploring
+              </Box>
+            </Card>
+          </Box>
         )}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
