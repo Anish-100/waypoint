@@ -9,12 +9,4 @@ SUPABASE_URL = Your URL
 ```
 ## Other Instructions
 
-Landmarks Table Values
- id| name | description | historical_context| latitude| longitude | detection_radius_meters | category | image_url |    
-| ------------- | ------------- || ------------- | ------------- || ------------- | ------------- || ------------- | ------------- | | ------------- |
-| Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  | 
-| Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  | Content Cell  || Content Cell  |
-
-
-
-id, name, description, historical_context, latitude, longitude, detection_radius_meters, category, image_url
+ id| name | description | historical_context| latitude| longitude | detection_radius_meters | category | image_url |
