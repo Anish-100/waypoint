@@ -20,3 +20,4 @@ export const getDistanceKm = (lat1, lon1, lat2, lon2) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
     return R * c; // Distance in km
 }
+    
