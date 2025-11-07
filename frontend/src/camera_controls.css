@@ -1,0 +1,294 @@
+/* ===== CAMERA CONTAINER ===== */
+.camera-page {
+  /* Container for all camera-related elements */
+}
+
+/* ===== LOCATION STATUS ===== */
+.location-status {
+  margin-bottom: var(--spacing-md);
+}
+
+.location-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+}
+
+.location-chip.success {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.location-chip.error {
+  background: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  cursor: pointer;
+}
+
+.location-chip.loading {
+  background: rgba(33, 150, 243, 0.1);
+  color: var(--primary-color);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.location-chip:hover.error {
+  background: rgba(244, 67, 54, 0.15);
+}
+
+/* ===== ALERTS ===== */
+.alert {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid;
+}
+
+.alert-info {
+  background: rgba(33, 150, 243, 0.1);
+  border-color: rgba(33, 150, 243, 0.3);
+  color: var(--primary-color);
+}
+
+.alert-success {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: var(--success-color);
+}
+
+.alert-warning {
+  background: rgba(255, 152, 0, 0.1);
+  border-color: rgba(255, 152, 0, 0.3);
+  color: var(--warning-color);
+}
+
+.alert-error {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: rgba(244, 67, 54, 0.3);
+  color: var(--error-color);
+}
+
+.alert-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.alert-description {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.alert-meta {
+  font-size: 0.75rem;
+  margin-top: var(--spacing-xs);
+  opacity: 0.8;
+}
+
+.alert-close {
+  float: right;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.5;
+}
+
+.alert-close:hover {
+  opacity: 1;
+}
+
+/* Alert with historical context */
+.alert-historical {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-sm);
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* ===== MAP CONTAINER ===== */
+.map-container {
+  height: 300px;
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== CAMERA VIEW ===== */
+.camera-view {
+  background: black;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-placeholder {
+  text-align: center;
+  color: rgb(118, 90, 148);
+  padding: var(--spacing-xl);
+}
+
+.camera-placeholder-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.camera-placeholder-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* ===== CAMERA CONTROLS ===== */
+.camera-controls {
+  text-align: center;
+}
+
+.btn-camera-enable {
+  background: var(--primary-color);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-block;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-camera-enable:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-camera-enable:active {
+  transform: translateY(0);
+}
+
+.btn-capture {
+  background: var(--success-color);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: inline-block;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
+}
+
+.btn-capture:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-capture:active {
+  transform: translateY(0);
+}
+
+.btn-capture:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-capture.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.btn-capture.no-landmark {
+  background: #999;
+}
+
+/* ===== CAMERA HINTS ===== */
+.camera-hint {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: rgba(33, 150, 243, 0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  margin-top: var(--spacing-lg);
+}
+
+.camera-hint-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.camera-hint-text + .camera-hint-text {
+  margin-top: var(--spacing-xs);
+}
+
+/* ===== RESPONSIVE CAMERA ===== */
+@media (max-width: 768px) {
+  .camera-view {
+    height: 300px;
+  }
+  
+  .map-container {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .camera-view {
+    height: 250px;
+    border-radius: var(--radius-md);
+  }
+  
+  .btn-capture {
+    min-width: 150px;
+    font-size: 1rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
+  }
+  
+  .btn-camera-enable {
+    font-size: 1rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .camera-view {
+    height: 250px;
+  }
+  
+  .map-container {
+    height: 200px;
+  }
+}

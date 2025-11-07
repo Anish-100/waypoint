@@ -1,17 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import Alert from '@mui/material/Alert';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import './app.css';
+import './header.css';
+import './nav_style.css';
+import './camera_controls.css';
 
 // Component to recenter map when coordinates change
 function RecenterMap({ coordinates }) {
@@ -42,7 +35,7 @@ function App() {
   const [landmarkCollection, setLandmarkCollection] = useState([]);
   const [isLoadingCollection, setIsLoadingCollection] = useState(false);
   
-  // NEW: Nearby landmark detection
+  // Nearby landmark detection
   const [nearestLandmark, setNearestLandmark] = useState(null);
   const [isCheckingLandmarks, setIsCheckingLandmarks] = useState(false);
   const [captureResult, setCaptureResult] = useState(null);
@@ -83,7 +76,7 @@ function App() {
     }
   };
 
-  // NEW: Check for nearby landmarks
+  // Check for nearby landmarks
   const checkNearbyLandmarks = async (coords) => {
     if (!coords) return;
     
@@ -149,7 +142,7 @@ function App() {
     }
   }, [stream]);
 
-  // NEW: Check nearby landmarks when coordinates change
+  // Check nearby landmarks when coordinates change
   useEffect(() => {
     if (coordinates && currentPage === 'camera') {
       checkNearbyLandmarks(coordinates);
@@ -294,161 +287,109 @@ function App() {
     });
   };
 
+  // The one that prints everything
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+    <div className="app">
       {/* Header */}
-      <Box sx={{ 
-        bgcolor: '#2196f3', 
-        color: 'white', 
-        p: 3, 
-        textAlign: 'center',
-        boxShadow: 2
-      }}>
-        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
-          Waypoint
-        </Typography>
-        <Typography variant="subtitle1">
-          A different way to explore!
-        </Typography>
-      </Box>
+      <header className="header">
+        <h1 className="header-title">Waypoint</h1>
+        <p className="header-subtitle"> Explore  Learn  Collect ! </p>
+      </header>
 
       {/* Navigation */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-around', 
-        bgcolor: 'white',
-        boxShadow: 1,
-        borderBottom: '1px solid #e0e0e0'
-      }}>
+      <nav className="nav-container">
         {[
           { id: 'camera', icon: '📷', label: 'Discover' },
           { id: 'collection', icon: '🎴', label: 'Collection' },
           { id: 'profile', icon: '👤', label: 'Profile' }
         ].map(nav => (
-          <Box
+          <button
             key={nav.id}
             onClick={() => setCurrentPage(nav.id)}
-            sx={{
-              flex: 1,
-              py: 2,
-              textAlign: 'center',
-              cursor: 'pointer',
-              bgcolor: currentPage === nav.id ? '#e3f2fd' : 'transparent',
-              borderBottom: currentPage === nav.id ? '3px solid #2196f3' : 'none',
-              transition: 'all 0.3s',
-              '&:hover': { bgcolor: '#f5f5f5' }
-            }}
+            className={`nav-item ${currentPage === nav.id ? 'active' : ''}`}
           >
-            <Typography sx={{ fontSize: '24px' }}>{nav.icon}</Typography>
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              {nav.label}
-            </Typography>
-          </Box>
+            <span className="nav-icon">{nav.icon}</span>
+            <span className="nav-label">{nav.label}</span>
+          </button>
         ))}
-      </Box>
+      </nav>
 
       {/* Main Content */}
-      <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <main className="main-content">
         {/* Camera Page */}
         {currentPage === 'camera' && (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
-              Discover Landmarks
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <section className="camera-page">
+            <h2 className="page-title">Discover Landmarks</h2>
+            <p className="page-subtitle">
               Point your camera at a landmark to learn its history
-            </Typography>
+            </p>
 
             {/* Location Status */}
-            <Box sx={{ mb: 3 }}>
+            <div className="location-status">
               {coordinates ? (
-                <Chip 
-                  icon={<LocationOnIcon />}
-                  label={`${coordinates.latitude.toFixed(4)}, ${coordinates.longitude.toFixed(4)} (±${coordinates.accuracy.toFixed(0)}m)`}
-                  color="success"
-                  sx={{ mb: 2 }}
-                />
+                <span className="location-chip success">
+                  📍 {coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)} (±{coordinates.accuracy.toFixed(0)}m)
+                </span>
               ) : locationError ? (
-                <Chip 
-                  label={`⚠️ ${locationError}`}
-                  color="error"
+                <span 
+                  className="location-chip error"
                   onClick={requestLocation}
-                />
+                >
+                  ⚠️ {locationError}
+                </span>
               ) : (
-                <Chip label="📍 Getting location..." />
+                <span className="location-chip loading">📍 Getting location...</span>
               )}
-            </Box>
+            </div>
 
-            {/* NEW: Nearby Landmark Alert */}
+            {/* Nearby Landmark Alert */}
             {isCheckingLandmarks ? (
-              <Alert severity="info" sx={{ mb: 3 }}>
+              <div className="alert alert-info">
                 🔍 Checking for nearby landmarks...
-              </Alert>
+              </div>
             ) : nearestLandmark ? (
-              <Alert severity="success" sx={{ mb: 3 }}>
-                <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-                  🎯 {nearestLandmark.name}
-                </Typography>
-                <Typography variant="body2">
-                  {nearestLandmark.description}
-                </Typography>
-                <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
-                  📍 {nearestLandmark.distance}m away
-                </Typography>
-              </Alert>
+              <div className="alert alert-success">
+                <p className="alert-title">🎯 {nearestLandmark.name}</p>
+                <p className="alert-description">{nearestLandmark.description}</p>
+                <p className="alert-meta">📍 {nearestLandmark.distance}m away</p>
+              </div>
             ) : coordinates ? (
-              <Alert severity="warning" sx={{ mb: 3 }}>
+              <div className="alert alert-warning">
                 No landmarks nearby. Move closer to a landmark to capture it!
-              </Alert>
+              </div>
             ) : null}
 
-            {/* NEW: Capture Result */}
+            {/* Capture Result */}
             {captureResult && (
-              <Alert 
-                severity={captureResult.success ? "success" : "error"} 
-                sx={{ mb: 3 }}
-                onClose={() => setCaptureResult(null)}
-              >
+              <div className={`alert ${captureResult.success ? 'alert-success' : 'alert-error'}`}>
+                <span 
+                  className="alert-close"
+                  onClick={() => setCaptureResult(null)}
+                >
+                  ×
+                </span>
                 {captureResult.success ? (
-                  <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                      🎉 {captureResult.landmark.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      {captureResult.landmark.description}
-                    </Typography>
+                  <div>
+                    <h3 className="alert-title">🎉 {captureResult.landmark.name}</h3>
+                    <p className="alert-description">{captureResult.landmark.description}</p>
                     {captureResult.landmark.historical_context && (
-                      <Typography variant="body2" sx={{ 
-                        mt: 2, 
-                        p: 1.5, 
-                        bgcolor: 'rgba(255,255,255,0.7)', 
-                        borderRadius: 1,
-                        fontStyle: 'italic'
-                      }}>
+                      <div className="alert-historical">
                         📜 {captureResult.landmark.historical_context}
-                      </Typography>
+                      </div>
                     )}
-                    <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
+                    <p className="alert-meta">
                       Distance: {captureResult.landmark.distance}m
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                 ) : (
-                  <Typography variant="body1">
-                    {captureResult.message}
-                  </Typography>
+                  <p>{captureResult.message}</p>
                 )}
-              </Alert>
+              </div>
             )}
             
             {/* Map */}
             {coordinates && (
-              <Box sx={{ 
-                height: 300, 
-                mb: 3, 
-                borderRadius: 2, 
-                overflow: 'hidden',
-                boxShadow: 2 
-              }}>
+              <div className="map-container">
                 <MapContainer
                   center={[coordinates.latitude, coordinates.longitude]}
                   zoom={13}
@@ -462,278 +403,179 @@ function App() {
                   </Marker>
                   <RecenterMap coordinates={coordinates} />
                 </MapContainer>
-              </Box>
+              </div>
             )}
 
             {/* Camera View */}
-            <Box sx={{ 
-              bgcolor: 'black', 
-              borderRadius: 2, 
-              overflow: 'hidden',
-              mb: 3,
-              height: 400,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div className="camera-view">
               {!stream ? (
-                <Box sx={{ textAlign: 'center', color: 'white' }}>
-                  <Typography variant="h1">📸</Typography>
-                  <Typography>Camera inactive</Typography>
-                </Box>
+                <div className="camera-placeholder">
+                  <span className="camera-placeholder-icon">📸</span>
+                  <p className="camera-placeholder-text">Camera inactive</p>
+                </div>
               ) : (
                 <video 
                   ref={videoRef} 
                   autoPlay 
                   playsInline
                   muted
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="camera-video"
                 />
               )}
-            </Box>
+            </div>
 
             {/* Camera Controls */}
-            <Box sx={{ textAlign: 'center' }}>
+            <div className="camera-controls">
               {!stream ? (
-                <Box
+                <button
                   onClick={handleCamera}
-                  sx={{
-                    bgcolor: '#2196f3',
-                    color: 'white',
-                    py: 2,
-                    px: 4,
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    display: 'inline-block',
-                    '&:hover': { bgcolor: '#1976d2' }
-                  }}
+                  className="btn-camera-enable"
                 >
-                  <Typography variant="h6">📷 Enable Camera</Typography>
-                </Box>
+                  📷 Enable Camera
+                </button>
               ) : (
-                <Box
+                <button
                   onClick={capturePhoto}
-                  sx={{
-                    bgcolor: (isCameraReady && nearestLandmark) ? '#4caf50' : '#ccc',
-                    color: 'white',
-                    py: 2,
-                    px: 4,
-                    borderRadius: '50px',
-                    cursor: (isCameraReady && nearestLandmark) ? 'pointer' : 'not-allowed',
-                    display: 'inline-block',
-                    '&:hover': (isCameraReady && nearestLandmark) ? { bgcolor: '#45a049' } : {}
-                  }}
+                  className={`btn-capture ${!isCameraReady ? 'loading' : !nearestLandmark ? 'no-landmark' : ''}`}
+                  disabled={!isCameraReady || !nearestLandmark}
                 >
-                  <Typography variant="h6">
-                    {!isCameraReady ? 'Loading...' : !nearestLandmark ? 'No Landmarks Nearby' : '📸 Capture Landmark'}
-                  </Typography>
-                </Box>
+                  {!isCameraReady ? 'Loading...' : !nearestLandmark ? 'No Landmarks Nearby' : '📸 Capture Landmark'}
+                </button>
               )}
-            </Box>
-          </Box>
+            </div>
+          </section>
         )}
 
-        {/* Collection Page with Material UI Cards */}
+        {/* Collection Page */}
         {currentPage === 'collection' && (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
-              My Collection
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              Your discovered landmarks
-            </Typography>
+          <section>
+            <h2 className="page-title">My Collection</h2>
+            <p className="page-subtitle">Your discovered landmarks</p>
 
             {isLoadingCollection ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                <CircularProgress />
-              </Box>
+              <div className="loading-container">
+                <div className="loading-spinner">Loading...</div>
+              </div>
             ) : landmarkCollection.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h1" sx={{ mb: 2 }}>🗺️</Typography>
-                <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
-                  No Landmarks Yet
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              <div className="empty-state">
+                <span className="empty-state-icon">🗺️</span>
+                <h3 className="empty-state-title">No Landmarks Yet</h3>
+                <p className="empty-state-description">
                   Start exploring to build your collection!
-                </Typography>
-                <Box
+                </p>
+                <button
                   onClick={() => setCurrentPage('camera')}
-                  sx={{
-                    bgcolor: '#2196f3',
-                    color: 'white',
-                    py: 2,
-                    px: 4,
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    display: 'inline-block',
-                    '&:hover': { bgcolor: '#1976d2' }
-                  }}
+                  className="btn btn-primary"
                 >
                   Start Discovering
-                </Box>
-              </Box>
+                </button>
+              </div>
             ) : (
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: 3
-              }}>
+              <div className="collection-grid">
                 {landmarkCollection.map((capture) => (
-                  <Card 
-                    key={capture.id}
-                    sx={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: 4
-                      }
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={capture.image_url}
+                  <article key={capture.id} className="collection-card">
+                    <img
+                      src={capture.image_url}
                       alt="Landmark capture"
-                      sx={{ objectFit: 'cover' }}
+                      className="collection-card-image"
                     />
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                    <div className="collection-card-content">
+                      <h3 className="collection-card-title">
                         {capture.landmarks?.name || `Landmark #${capture.id}`}
-                      </Typography>
+                      </h3>
                       
                       {capture.landmarks?.description && (
-                        <Typography variant="body2" sx={{ mb: 2 }} color="text.secondary">
+                        <p className="collection-card-description">
                           {capture.landmarks.description}
-                        </Typography>
+                        </p>
                       )}
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <LocationOnIcon sx={{ fontSize: 18, mr: 1, color: '#2196f3' }} />
-                        <Typography variant="body2" color="text.secondary">
+                      {capture.landmarks?.historical_context && (
+                        <p className="collection-card-historical-context">
+                          {capture.landmarks.historical_context}
+                        </p>
+
+                      )}
+                      <div className="collection-card-meta">
+                        <span>📍</span>
+                        <span>
                           {capture.latitude?.toFixed(4)}, {capture.longitude?.toFixed(4)}
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
 
                       {capture.distance_from_landmark_meters && (
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                        <p className="collection-card-meta">
                           📏 Captured from {capture.distance_from_landmark_meters}m away
-                        </Typography>
+                        </p>
                       )}
 
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <CalendarTodayIcon sx={{ fontSize: 16, mr: 1, color: '#757575' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {formatDate(capture.timestamp || capture.created_at)}
-                        </Typography>
-                      </Box>
+                      <div className="collection-card-meta">
+                        <span>📅</span>
+                        <span>{formatDate(capture.timestamp || capture.created_at)}</span>
+                      </div>
 
-                      <Box sx={{ mt: 2 }}>
-                        <Chip 
-                          label={capture.landmarks?.category || "Captured"}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </Box>
-                    </CardContent>
-                  </Card>
+                      <div style={{ marginTop: '1rem' }}>
+                        <span className="chip chip-info">
+                          {capture.landmarks?.category || "Captured"}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
                 ))}
-              </Box>
+              </div>
             )}
-          </Box>
+          </section>
         )}
 
         {/* Profile Page */}
         {currentPage === 'profile' && (
-          <Box>
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Box sx={{ 
-                width: 100, 
-                height: 100, 
-                bgcolor: '#2196f3', 
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2
-              }}>
-                <Typography variant="h2">👤</Typography>
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-                {userData.username}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+          <section>
+            <div className="profile-header">
+              <div className="profile-avatar">
+                <span>👤</span>
+              </div>
+              <h2 className="profile-username">{userData.username}</h2>
+              <p className="profile-member-since">
                 Member since {userData.joinDate}
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: 2,
-              mb: 4
-            }}>
+            <div className="stats-grid">
               {[
                 { icon: '⭐', value: userData.totalPoints, label: 'Total Points' },
                 { icon: '🏛️', value: userData.landmarksCollected, label: 'Landmarks' },
                 { icon: '📸', value: userData.photosUploaded, label: 'Photos' },
                 { icon: '🏆', value: `Level ${userData.level}`, label: 'Explorer Level' }
               ].map((stat, idx) => (
-                <Card key={idx} sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h3">{stat.icon}</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 600, my: 1 }}>
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {stat.label}
-                  </Typography>
-                </Card>
+                <div key={idx} className="stat-card">
+                  <span className="stat-icon">{stat.icon}</span>
+                  <p className="stat-value">{stat.value}</p>
+                  <p className="stat-label">{stat.label}</p>
+                </div>
               ))}
-            </Box>
+            </div>
 
-            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-              🏅 Achievements
-            </Typography>
-            <Card sx={{ p: 3, textAlign: 'center', mb: 3 }}>
-              <Typography variant="body1" color="text.secondary">
-                🎯 No achievements yet
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+            <h3 className="section-title">🏅 Achievements</h3>
+            <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+              <p>🎯 No achievements yet</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 Keep exploring to earn badges!
-              </Typography>
-            </Card>
+              </p>
+            </div>
 
-            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-              📊 Recent Activity
-            </Typography>
-            <Card sx={{ p: 3, textAlign: 'center', mb: 3 }}>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                📍 No recent activity
-              </Typography>
-              <Box
+            <h3 className="section-title">📊 Recent Activity</h3>
+            <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+              <p style={{ marginBottom: '1rem' }}>📍 No recent activity</p>
+              <button
                 onClick={() => setCurrentPage('camera')}
-                sx={{
-                  bgcolor: '#2196f3',
-                  color: 'white',
-                  py: 1.5,
-                  px: 3,
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  '&:hover': { bgcolor: '#1976d2' }
-                }}
+                className="btn btn-primary"
               >
                 Start Exploring
-              </Box>
-            </Card>
-          </Box>
+              </button>
+            </div>
+          </section>
         )}
-      </Box>
-    </Box>
+      </main>
+    </div>
   );
 }
 
