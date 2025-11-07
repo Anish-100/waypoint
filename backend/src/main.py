@@ -14,41 +14,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 @app.post("/api/v1/landmarks/identify")
 async def identify_landmark(
     image: UploadFile = File(...),
     latitude: float = Form(...),
     longitude: float = Form(...),
-    timestamp: str = Form(None)  # Added this
+    timestamp: str = Form(None)
 ):
-    # STEP 1: Generate unique filename
     file_id = str(uuid4())
     file_name = f"{file_id}.jpg"
-    
-    # STEP 2: Define the path IN THE BUCKET
     storage_path = f"landmark-captures/{file_name}"
     
-    # STEP 3: Read image content (FIX)
     image_content = await image.read()
     
-    # STEP 4: Upload to Storage (FIX)
     supabase.storage.from_("game-assets").upload(
         storage_path,
-        image_content,  # Changed from image.file
+        image_content,
         {"content-type": "image/jpeg"}
     )
     
-    # STEP 5: Get the URL
     image_url = supabase.storage.from_("game-assets").get_public_url(storage_path)
     
-    # STEP 6: Save to Database Table with that URL
     result = supabase.table("landmark_captures").insert({
         "image_url": image_url,
         "latitude": latitude,
         "longitude": longitude,
-        "timestamp": timestamp  # Added this
+        "timestamp": timestamp
     }).execute()
     
     return {
@@ -57,3 +48,21 @@ async def identify_landmark(
         "record_id": result.data[0]["id"],
         "received": {"latitude": latitude, "longitude": longitude}
     }
+
+# NEW ENDPOINT: Fetch user's landmark collection
+@app.get("/api/v1/landmarks/collection")
+async def get_landmark_collection():
+    try:
+        # Fetch all landmarks from database, ordered by most recent first
+        result = supabase.table("landmark_captures") \
+            .select("*") \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        return {
+            "success": True,
+            "landmarks": result.data,
+            "count": len(result.data)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
