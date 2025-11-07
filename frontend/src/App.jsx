@@ -29,16 +29,41 @@ const Backend_URL = getBackendUrl();
 const getBadges = (uniqueCount) => {
     const badges = [];
     if (uniqueCount >= 1) {
-        badges.push({ name: "First Timer", icon: "🔰", description: "Captured your very first landmark." });
+        badges.push({ name: "First Timer", 
+                      icon: "🔰", description: "Captured your very first landmark.", 
+                      className: "badge-tier-bronze", 
+                      borderColor: "#CD7F32", 
+                      iconColor: "#CD7F32",
+                      backgroundColor: "rgba(205, 127, 50, 0.1)"
+                    });
     }
     if (uniqueCount >= 5) {
-        badges.push({ name: "Local Tourist", icon: "🧭", description: "Collected 5 unique landmarks." });
+        badges.push({ name: "Local Tourist", 
+                      icon: "🧭", description: "Collected 5 unique landmarks.", 
+                      className: "badge-tier-silver", 
+                      borderColor: "#C0C0C0",
+                      iconColor: "#C0C0C0",
+                      backgroundColor: "rgba(192, 192, 192, 0.1)"
+                    });
     }
     if (uniqueCount >= 10) {
-        badges.push({ name: "Novice Collector", icon: "🌟", description: "Reached 10 unique landmarks." });
+        badges.push({ name: "Novice Collector", 
+                      icon: "🌟", description: "Reached 10 unique landmarks.", 
+                      className: "badge-tier-gold",
+                      borderColor: "#FFD700",
+                      iconColor: "#FFD700",
+                      backgroundColor: "rgba(255, 215, 0, 0.1)"
+                    });
     }
     if (uniqueCount >= 25) {
-        badges.push({ name: "Urban Explorer", icon: "🗺️", description: "Collected 25 unique landmarks." });
+        badges.push({ name: "Urban Explorer", 
+                      icon: "🗺️", 
+                      description: "Collected 25 unique landmarks.", 
+                      className: "badge-tier-platinum", 
+                      borderColor: "#eeecc9",
+                      iconColor: "#eeecc9",
+                      backgroundColor: "rgba(238, 236, 201, 0.1)"
+                    });
     }
     return badges;
 };
@@ -606,8 +631,13 @@ function App() {
             {userData.badges.length > 0 ? (
                 <div className="achievements-grid">
                     {userData.badges.map((badge, index) => (
-                        <div key={index} className="badge-card">
-                            <span className="badge-icon">{badge.icon}</span>
+                        <div key={index} className={`badge-card ${badge.className}`} style={{ 
+                                borderColor: badge.borderColor,
+                                background: badge.backgroundColor,
+                                borderStyle: 'solid',
+                                borderWidth: '2px'
+                            }}>
+                            <span className="badge-icon"style={{ color: badge.iconColor }}>{badge.icon}</span>
                             <h4 className="badge-name">{badge.name}</h4>
                             <p className="badge-description">{badge.description}</p>
                         </div>
@@ -622,7 +652,7 @@ function App() {
               </div>
             )}
 
-            <h3 className="section-title">📊 Recent Activity</h3>
+            <h3 className="section-title" style={{marginTop: '1.5rem'}}>📊 Recent Activity</h3>
             <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               <p style={{ marginBottom: '1rem' }}>📍 No recent activity</p>
               <button

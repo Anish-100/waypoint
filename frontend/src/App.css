@@ -313,6 +313,7 @@ body {
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
+  margin-top: var(--spacing-xl);
   margin-bottom: var(--spacing-md);
   color: var(--text-primary); 
 }
@@ -436,16 +437,18 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-top: var(--spacing-md);   
+    margin-bottom: var(--spacing-2xl);
 }
 
 .badge-card {
-    background: var(--surface-light);
+    background: var(--surface);    /* --surface-light */
     border: 1px solid var(--border);
     border-radius: 0.5rem;
     padding: 1rem;
     text-align: center;
     box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
 }
 
 .badge-icon {
@@ -465,6 +468,48 @@ body {
     font-size: 0.75rem;
     color: var(--text-secondary);
     margin: 0;
+}
+
+.badge-tier-bronze {
+    background: var(--surface-purple-light) !important;
+    border: 3px solid #CD7F32 !important; 
+    box-shadow: 0 0 15px rgba(205, 127, 50, 0.9);
+}
+.badge-tier-bronze .badge-icon {
+    color: #CD7F32;
+}
+
+/* Tier 2: Local Tourist (Silver) */
+.badge-tier-silver {
+    background: var(--surface-purple);
+    border: 2px solid #C0C0C0; 
+    box-shadow: 0 0 10px rgba(192, 192, 192, 0.7);
+}
+.badge-tier-silver .badge-icon {
+    color: #C0C0C0;
+}
+
+/* Tier 3: Novice Collector (Gold) */
+.badge-tier-gold {
+    background: var(--surface-purple);
+    border: 2px solid #FFD700; 
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    transform: scale(1.02); 
+}
+.badge-tier-gold .badge-icon {
+    color: #FFD700;
+}
+
+/* Tier 4: Urban Explorer (Platinum/Primary Color) */
+.badge-tier-platinum {
+    background: var(--surface-purple);
+    border: 2px solid var(--primary-color); 
+    box-shadow: 0 0 15px rgba(238, 236, 201, 0.9); 
+    transform: scale(1.03); 
+    border-radius: var(--radius-lg); 
+}
+.badge-tier-platinum .badge-icon {
+    color: var(--primary-color);
 }
 
 }
