@@ -26,6 +26,23 @@ const getBackendUrl = () => {
 };
 const Backend_URL = getBackendUrl();
 
+const getBadges = (uniqueCount) => {
+    const badges = [];
+    if (uniqueCount >= 1) {
+        badges.push({ name: "First Timer", icon: "🔰", description: "Captured your very first landmark." });
+    }
+    if (uniqueCount >= 5) {
+        badges.push({ name: "Local Tourist", icon: "🧭", description: "Collected 5 unique landmarks." });
+    }
+    if (uniqueCount >= 10) {
+        badges.push({ name: "Novice Collector", icon: "🌟", description: "Reached 10 unique landmarks." });
+    }
+    if (uniqueCount >= 25) {
+        badges.push({ name: "Urban Explorer", icon: "🗺️", description: "Collected 25 unique landmarks." });
+    }
+    return badges;
+};
+
 function App() {
   const [stream, setStream] = useState(null);
   const [currentPage, setCurrentPage] = useState('camera');
@@ -44,7 +61,7 @@ function App() {
 
   const [userData, setUserData] = useState({
     username: 'Explorer',
-    joinDate: 'November 2024',
+    joinDate: 'November 2025',
     totalPoints: 0,
     landmarksCollected: 0,
     photosUploaded: 0,
@@ -61,13 +78,34 @@ function App() {
         throw new Error(`Failed to fetch: ${response.status}`);
       }
       const data = await response.json();
-      setLandmarkCollection(data.captures || []);
+      const captures = data.captures || [];
+      setLandmarkCollection(captures);
       
+      // Calculate Unique Landmarks and Total Photos
+      const uniqueLandmarkIds = new Set();
+      captures.forEach(capture => {
+        if (capture.landmark_id) {
+          uniqueLandmarkIds.add(capture.landmark_id);
+        }
+      });
+
+      const uniqueCount = uniqueLandmarkIds.size;
+      const totalPhotos = captures.length;
+      
+      // Level increases by 1 for every 10 unique landmarks. Level 1 is base.
+      const newLevel = 1 + Math.floor(uniqueCount / 10);
+      
+      // Calculate Badges 
+      const newBadges = getBadges(uniqueCount);
+
       // Update user stats
       setUserData(prev => ({
         ...prev,
-        landmarksCollected: data.captures?.length || 0,
-        photosUploaded: data.captures?.length || 0
+        landmarksCollected: uniqueCount,
+        photosUploaded: totalPhotos,
+        totalPoints: uniqueCount * 100 + totalPhotos * 10, // Simple point calculation
+        level: newLevel,
+        badges: newBadges
       }));
     } catch (error) {
       console.error('Error fetching collection:', error);
@@ -108,7 +146,7 @@ function App() {
 
   // Load collection when viewing collection page
   useEffect(() => {
-    if (currentPage === 'collection') {
+    if (currentPage === 'collection' || currentPage === 'profile') {
       fetchLandmarkCollection();
     }
   }, [currentPage]);
@@ -198,6 +236,14 @@ function App() {
       return;
     }
     
+    if (!nearestLandmark) {
+      setCaptureResult({
+        success: false,
+        message: 'No landmarks within range. Get closer to a landmark to capture it!'
+      })
+      return;
+    }
+
     // Clear previous result
     setCaptureResult(null);
     
@@ -256,6 +302,8 @@ function App() {
             message: data.message
           });
           
+          fetchLandmarkCollection(); // Re-fetch collection to update stats after a successful capture
+
           // Refresh the nearby landmarks check
           checkNearbyLandmarks(coords);
         } else {
@@ -321,14 +369,14 @@ function App() {
           <section className="camera-page">
             <h2 className="page-title">Discover Landmarks</h2>
             <p className="page-subtitle">
-              Point your camera at a landmark to learn its history
+              Point your camera at a landmark to learn its history and snap a picture to add it to your collection!
             </p>
 
             {/* Location Status */}
             <div className="location-status">
               {coordinates ? (
                 <span className="location-chip success">
-                  📍 {coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)} (±{coordinates.accuracy.toFixed(0)}m)
+                  Your current coordinates are: 📍 {coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)} (±{coordinates.accuracy.toFixed(0)}m)
                 </span>
               ) : locationError ? (
                 <span 
@@ -555,12 +603,24 @@ function App() {
             </div>
 
             <h3 className="section-title">🏅 Achievements</h3>
-            <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-              <p>🎯 No achievements yet</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                Keep exploring to earn badges!
-              </p>
-            </div>
+            {userData.badges.length > 0 ? (
+                <div className="achievements-grid">
+                    {userData.badges.map((badge, index) => (
+                        <div key={index} className="badge-card">
+                            <span className="badge-icon">{badge.icon}</span>
+                            <h4 className="badge-name">{badge.name}</h4>
+                            <p className="badge-description">{badge.description}</p>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+              <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+                <p>🎯 No achievements yet</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  Keep exploring to earn badges!
+                </p>
+              </div>
+            )}
 
             <h3 className="section-title">📊 Recent Activity</h3>
             <div className="card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
