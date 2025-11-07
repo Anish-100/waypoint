@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import './app.css';
+import './App.css';
 import './header.css';
 import './nav_style.css';
 import './camera_controls.css';
