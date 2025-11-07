@@ -1,7 +1,7 @@
 
 # How to run 
 
-Install a ```.env``` file in your ```.src``` folder and add these 2 keys to it:
+Add a ```.env``` file in your ```.src``` folder and add these 2 keys to it:
 ```
 SUPABASE_API_KEY = Your API KEY
 SUPABASE_URL = Your URL
